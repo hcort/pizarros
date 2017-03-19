@@ -1,17 +1,24 @@
+
+
 import requests
 from requests import RequestException
 # regular expressions
 import re
 # beautiful soup for HTML parsing
 from bs4 import BeautifulSoup
+# to create the date of each program
+from datetime import date
 
 from podcast.db.dbcommons import PodcastEntry
+
+
 
 
 class PodcastCrawler:
 
     def __init__(self, podcast_cod, database ):
         self.podcast_code = podcast_cod
+        self.podcast_title = ""
         self.db = database
 
 
@@ -79,7 +86,8 @@ class PodcastCrawler:
     def parse_html(self,page: requests.Response) -> None:
         # gather all links
         soup = BeautifulSoup(page.text)
-        podcast_title = self.get_podcast_title(soup)
+        if self.podcast_title == "" :
+            self.podcast_title = self.get_podcast_title(soup)
         # all the download links are in a table with odd and even rows
         # from this table I´ll get the links and info about each file
         all_odds = soup.findAll("li", {"class": "odd"})
@@ -101,12 +109,33 @@ class PodcastCrawler:
                 title_as_link = title.contents[0].attrs["href"]
                 print(self.podcast_title + "\t" + str(i) + "\t" + title.contents[0].attrs[
                     "title"] + ": " + title_as_link + " -> " + mp3_link)
-                date = ""
-                title = ""
-                entry = PodcastEntry( mp3_link, date, title, self.podcast_title, self.podcast_code )
-                self.db.add_entry( entry )
+                entry = self.create_entry( mp3_link, title_as_link )
+                if entry is not None:
+                    self.db.add_entry( entry )
             except Exception as ex:
                 # do nothing?
                 print(ex)
                 print("Bad parsing in item " + str(i))
             i += 1
+
+    def create_entry(self, mp3_link, title_as_link):
+        title_split = title_as_link.split('/')
+        # split format for Radio 3 podcasts
+        # / alacarta / audio / podcast-title / podcast-title-entry-title-date
+        # entry-title may be empty!!!!
+        try:
+            prog_date = ""
+            date_rgx = re.compile("-([0-9]{2})-([0-9]{2})-([0-9]{2})")
+            found = re.search(date_rgx, title_split[4])
+            if found is not None:
+                day = found.group(1)
+                month = found.group(2)
+                year = found.group(3)
+                prog_date = date(int(year)+2000, int(month), int(day))
+                prog_date_str = str( prog_date )
+            title = title_split[3] + "-" + prog_date_str
+            entry = PodcastEntry(mp3_link, prog_date_str, title, self.podcast_title, self.podcast_code)
+            return entry
+        except Exception as ex:
+            print( ex )
+            return None

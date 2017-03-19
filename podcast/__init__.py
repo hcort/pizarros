@@ -3,18 +3,18 @@ import pprint
 import podcast.crawler
 from podcast.crawler.crawler import PodcastCrawler
 from podcast.db.mongo import MongoDBPodcast
+from podcast.downloader.downloader import PodcastDownloader
 
 
 def main() :
     db = MongoDBPodcast()
-    crawl = PodcastCrawler("22332",db)
+    podcast_code = "22332"
+    crawl = PodcastCrawler(podcast_code,db)
+    result = db.collection.delete_many({"PodcastEntry.podcast_code": podcast_code})
     crawl.start_crawl( )
-    items = db.get_entries( "22332")
-    res = items.count()
-    for item in items:
-        #pprint.pprint(item)
-        entry = db.decode_PodcastEntry( item )
-        print( entry.mp3_link)
+    download = PodcastDownloader(podcast_code,db)
+    download.start_batch_download()
+
 
 
 if __name__ == "__main__" : main()

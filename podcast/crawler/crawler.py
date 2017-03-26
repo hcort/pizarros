@@ -107,9 +107,9 @@ class PodcastCrawler:
                 mp3_link = mp3_link.contents[1].attrs["href"]
                 title = item.find("span", {"class": "titulo-tooltip"})
                 title_as_link = title.contents[0].attrs["href"]
-                print(self.podcast_title + "\t" + str(i) + "\t" + title.contents[0].attrs[
-                    "title"] + ": " + title_as_link + " -> " + mp3_link)
-                entry = self.create_entry( mp3_link, title_as_link )
+                plain_title = title.contents[0].attrs["title"]
+                print(self.podcast_title + "\t" + str(i) + "\t" + plain_title + ": " + title_as_link + " -> " + mp3_link)
+                entry = self.create_entry( mp3_link, title_as_link, plain_title )
                 if entry is not None:
                     self.db.add_entry( entry )
             except Exception as ex:
@@ -118,14 +118,14 @@ class PodcastCrawler:
                 print("Bad parsing in item " + str(i))
             i += 1
 
-    def create_entry(self, mp3_link, title_as_link):
+    def create_entry(self, mp3_link, title_as_link, plain_title):
         title_split = title_as_link.split('/')
         # split format for Radio 3 podcasts
         # / alacarta / audio / podcast-title / podcast-title-entry-title-date
         # entry-title may be empty!!!!
         try:
             prog_date = ""
-            date_rgx = re.compile("-([0-9]{2})-([0-9]{2})-([0-9]{2})")
+            date_rgx = re.compile("-([0-9]{2})-([0-9]{2})-([0-9]{2})$")
             found = re.search(date_rgx, title_split[4])
             if found is not None:
                 day = found.group(1)
@@ -133,8 +133,24 @@ class PodcastCrawler:
                 year = found.group(3)
                 prog_date = date(int(year)+2000, int(month), int(day))
                 prog_date_str = str( prog_date )
-            title = title_split[3] + "-" + prog_date_str
-            entry = PodcastEntry(mp3_link, prog_date_str, title, self.podcast_title, self.podcast_code)
+            else:
+                # another date format
+                date_rgx = re.compile("-([0-9]{2})([0-9]{2})([0-9]{2})$")
+                found = re.search(date_rgx, title_split[4])
+                if found is not None:
+                    day = found.group(1)
+                    month = found.group(2)
+                    year = found.group(3)
+                    prog_date = date(int(year)+2000, int(month), int(day))
+                    prog_date_str = str( prog_date )
+
+            mp3_filename = title_split[3] + "-" + prog_date_str
+            title = ""
+            if plain_title == "":
+                title = mp3_filename
+            else:
+                title = plain_title[+4:]
+            entry = PodcastEntry(mp3_link, prog_date_str, title, mp3_filename, self.podcast_title, self.podcast_code)
             return entry
         except Exception as ex:
             print( ex )

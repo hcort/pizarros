@@ -20,10 +20,12 @@ class MongoDBPodcast(BasicDB):
         except Exception as ex:
             print(ex)
             return 0
+    def remove_entry(self, podcast_entry ):
+        self.collection.delete_one( podcast_entry )
 
     def get_entries(self, podcast_code: str):
         # important: specify the full json path to the field i want
-        return self.collection.find({"PodcastEntry.podcast_code": podcast_code})
+        return self.collection.find({"PodcastEntry.podcast_code": podcast_code}).sort( "PodcastEntry.entry_date", pymongo.ASCENDING )
 
     def encode_PodcastEntry(self, podcast_entry):
         # converts a PodcastEntry to json
@@ -31,6 +33,7 @@ class MongoDBPodcast(BasicDB):
                 "mp3_link": podcast_entry.mp3_link,
                 "entry_date": podcast_entry.entry_date,
                 "entry_title": podcast_entry.entry_title,
+                "mp3_filename": podcast_entry.mp3_filename,
                 "podcast_title": podcast_entry.podcast_title,
                 "podcast_code": podcast_entry.podcast_code }
 
@@ -43,5 +46,6 @@ class MongoDBPodcast(BasicDB):
                                 "PodcastEntry"]["mp3_link"],
                             document["PodcastEntry"]["entry_date"],
                             document["PodcastEntry"]["entry_title"],
+                            document["PodcastEntry"]["mp3_filename"],
                             document["PodcastEntry"]["podcast_title"],
                             document["PodcastEntry"]["podcast_code"])

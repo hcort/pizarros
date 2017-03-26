@@ -1,5 +1,7 @@
+pytag
 bs4
 #pip install requests
 requests
 pymongo
 urllib
+mutagen

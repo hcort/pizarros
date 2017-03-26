@@ -12,10 +12,11 @@ class PodcastEntry(object):
         # what do I have to do?
         pass
 
-    def __init__(self, link, date, title, podcast_tit, podcast_cod ):
+    def __init__(self, link, date, title, filename, podcast_tit, podcast_cod ):
         self.mp3_link = link
         self.entry_date = date
         self.entry_title = title
+        self.mp3_filename = filename
         self.podcast_title = podcast_tit
         self.podcast_code = podcast_cod
 

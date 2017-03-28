@@ -31,7 +31,7 @@ class PodcastCrawler:
                       "orderCriteria=DESC&modl=TOC&locale=es&pageSize=15" \
                       "&ctx=__%2__&typeFilter=39816"
         # first page
-        current_page = 32
+        current_page = 1
         # get last page from the "Último" link
         #   get the whole link
         #   <a name="paginaIR" href="..."><span>Último</span></a>

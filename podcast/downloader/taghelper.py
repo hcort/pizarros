@@ -63,7 +63,6 @@ def write_cover_art(entry, mp3_name ):
 # writes some basic ID3 tags to the mp3 file
 def write_mp3_tags( entry, mp3_name):
     write_cover_art(entry, mp3_name)
-    print(EasyID3.valid_keys.keys())
     audio = EasyID3(mp3_name)
     audio["title"] = entry.entry_title
     audio["artist"] = entry.podcast_title

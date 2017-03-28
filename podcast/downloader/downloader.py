@@ -18,7 +18,7 @@ class PodcastDownloader:
         res = items.count()
         for item in items:
             entry = self.db.decode_PodcastEntry(item)
-            #print( entry.mp3_link)
+            print( entry.entry_date + "\t" + entry.podcast_title )
             if self.get_mp3_file(entry) == True:
                 self.db.remove_entry(item)
 

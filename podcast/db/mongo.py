@@ -10,6 +10,7 @@ class MongoDBPodcast(BasicDB):
         self.client = MongoClient()
         self.db = self.client['podcast-database']
         self.collection = self.db['podcast-database']
+        self.collection.create_index("PodcastEntry.timestamp")
 
     def add_entry(self, podcast_entry: PodcastEntry) -> object:
         try:
@@ -25,11 +26,12 @@ class MongoDBPodcast(BasicDB):
 
     def get_entries(self, podcast_code: str):
         # important: specify the full json path to the field i want
-        return self.collection.find({"PodcastEntry.podcast_code": podcast_code}).sort( "PodcastEntry.entry_date", pymongo.ASCENDING )
+        return self.collection.find({"PodcastEntry.podcast_code": podcast_code}).sort( "PodcastEntry.timestamp", pymongo.ASCENDING )
 
     def encode_PodcastEntry(self, podcast_entry):
         # converts a PodcastEntry to json
         return {"_type": "PodcastEntry",
+                "timestamp": podcast_entry.timestamp,
                 "mp3_link": podcast_entry.mp3_link,
                 "entry_date": podcast_entry.entry_date,
                 "entry_title": podcast_entry.entry_title,
@@ -43,6 +45,8 @@ class MongoDBPodcast(BasicDB):
         assert document["PodcastEntry"]["_type"] == "PodcastEntry"
         # transforms JSON to PodcastEntry
         return PodcastEntry(document[
+                                "PodcastEntry"]["timestamp"],
+                            document[
                                 "PodcastEntry"]["mp3_link"],
                             document["PodcastEntry"]["entry_date"],
                             document["PodcastEntry"]["entry_title"],

@@ -10,7 +10,7 @@ def main() :
     db = MongoDBPodcast()
     podcast_code = "22332"
     crawl = PodcastCrawler(podcast_code,db)
-    result = db.collection.delete_many({"PodcastEntry.podcast_code": podcast_code})
+ #   result = db.collection.delete_many({"PodcastEntry.podcast_code": podcast_code})
     items = db.get_entries(podcast_code)
     res = items.count()
     crawl.start_crawl( )
